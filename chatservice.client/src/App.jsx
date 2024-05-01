@@ -9,38 +9,29 @@ function App() {
     const [connection, setConnection] = useState(null);
 
     // After each time refresh then we are creating signalR Connection..?
-    let joinFunction = () => {
+    let joinFunction = async (UserName,ChatRoom) => {
         // Create a new SignalR Hub connection
         const newConnection = new HubConnectionBuilder()
             .withUrl("https://localhost:7120/Chat")
-            .configureLogging(LogLevel.Information)
             .withAutomaticReconnect()
             .build();
-
-        newConnection.on("JoinSpecificChatRoom", (username, msg) => {
-            console.log("Msg", msg);
-        });
-
-        newConnection.on("ReceiveMessage", (user, message) => {
+        
+       newConnection.on("RecieveMessage", (user, message) => {
             console.log(`${user}: ${message}`);
-            // Handle received messages
+        
         });
 
-        // Start the connection
-        newConnection.start().then(() => {
-            console.log("Connection established.");
-            setConnection(newConnection);
-           
-        }).catch((error) => {
-            console.error("Error establishing connection:", error);
-        });
+        try {
+            await newConnection.start();
+            await newConnection.invoke("JoinSpecificChatRoom", { UserName, ChatRoom });
+            console.log("Connection established and JoinSpecificChatRoom method invoked successfully.");
+        } catch (error) {
+            console.error("Error occurred:", error);
+        }
+        
+        setConnection(newConnection);
     };
 
-    useEffect(() => {
-        joinFunction();
-    }, []);
-
-   
 
     return (
         <div>
@@ -53,7 +44,7 @@ function App() {
                             </h1>
                         </Col>
                     </Row>
-                    <WaitingRoom ></WaitingRoom>
+                    <WaitingRoom joinChatRoom={joinFunction} ></WaitingRoom>
                 </Container>
             </main>
         </div>

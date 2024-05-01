@@ -36,8 +36,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 app.UseCors("AllowSpecificOrigin");
-app.MapControllers();
+
 app.MapHub<ChatHub>("/Chat");
+app.MapControllers();
 app.MapFallbackToFile("/index.html");
 
 app.Run();
